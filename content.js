@@ -190,10 +190,10 @@ function showSlashMenu(filter, inputEl) {
       slashMenu.id = 'ccgpt-slash-menu';
       Object.assign(slashMenu.style, {
         position:     'fixed',
-        background:   '#2d2d3d',
-        border:       '1px solid #4a4a6a',
+        background:   '#ffffff',
+        border:       '1px solid #cbd5e0',
         borderRadius: '10px',
-        boxShadow:    '0 8px 24px rgba(0,0,0,0.4)',
+        boxShadow:    '0 8px 24px rgba(0,0,0,0.12)',
         zIndex:       '9999',
         minWidth:     '280px',
         maxHeight:    '240px',
@@ -205,7 +205,7 @@ function showSlashMenu(filter, inputEl) {
         const item = e.target.closest('.ccgpt-item');
         if (!item) return;
         slashMenu.querySelectorAll('.ccgpt-item').forEach(el => {
-          el.style.background = el === item ? '#3d3d5c' : 'transparent';
+          el.style.background = el === item ? '#f7fafc' : 'transparent';
         });
         slashSelected = parseInt(item.dataset.index);
       });
@@ -237,11 +237,11 @@ function renderSlashMenu() {
     <div class="ccgpt-item" data-index="${i}" style="
       padding: 9px 14px;
       cursor: pointer;
-      background: ${i === slashSelected ? '#3d3d5c' : 'transparent'};
-      border-bottom: 1px solid #3a3a50;
+      background: ${i === slashSelected ? '#f7fafc' : 'transparent'};
+      border-bottom: 1px solid #e2e8f0;
     ">
-      <div style="font-size:12px;font-weight:600;color:#cba6f7;">//${p.name}</div>
-      <div style="font-size:11px;color:#6c7086;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.text.substring(0, 60)}${p.text.length > 60 ? '…' : ''}</div>
+      <div style="font-size:12px;font-weight:600;color:#6b46c1;">//${p.name}</div>
+      <div style="font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.text.substring(0, 60)}${p.text.length > 60 ? '…' : ''}</div>
     </div>
   `).join('');
 
