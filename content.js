@@ -1,4 +1,4 @@
-// --- Cache local (evita leer storage en cada evento) ---
+// --- Local cache (avoids reading storage on each event) ---
 
 let cachedPrompts    = [];
 let cachedDeleteMode = false;
@@ -36,7 +36,7 @@ function waitFor(selector, timeout = 3000) {
 
     setTimeout(() => {
       observer.disconnect();
-      reject(new Error(`Timeout: no apareció "${selector}"`));
+      reject(new Error(`Timeout: "${selector}" did not appear`));
     }, timeout);
   });
 }
@@ -45,38 +45,40 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// --- Lógica de borrado ---
+// --- Delete logic ---
 
-async function deleteCurrentChat() {
-  const optionsButton = document.querySelector('[data-testid="conversation-options-button"]');
-  if (!optionsButton) throw new Error('No se encontró el botón de opciones');
-
-  optionsButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
-  optionsButton.dispatchEvent(new MouseEvent('mousedown',   { bubbles: true, cancelable: true }));
-  optionsButton.dispatchEvent(new PointerEvent('pointerup',  { bubbles: true, cancelable: true }));
-  optionsButton.dispatchEvent(new MouseEvent('mouseup',     { bubbles: true, cancelable: true }));
-  optionsButton.click();
-  await sleep(500);
-
-  await waitFor('[role="menuitem"]');
-  const menuItems = document.querySelectorAll('[role="menuitem"]');
-  const deleteItem = [...menuItems].find(el => el.textContent.trim() === 'Delete');
-  if (!deleteItem) throw new Error('No se encontró la opción Delete en el menú');
-  deleteItem.click();
-
-  await sleep(300);
-  const allButtons = document.querySelectorAll('button');
-  const confirmButton = [...allButtons].find(el => el.textContent.trim() === 'Delete');
-  if (!confirmButton) throw new Error('No se encontró el botón de confirmación');
-  confirmButton.click();
+// ChatGPT removed data-testid="conversation-options-button"; the header "More" button is the current anchor
+function findOptionsButton() {
+  return document.querySelector('[data-testid="conversation-options-button"]')
+    || document.querySelector('[data-app-shell-main-titlebar] button[aria-label="More"][aria-haspopup="menu"]');
 }
 
-// --- Botón de borrado ---
+// Deletes the current chat through ChatGPT's internal API, so no menu or modal is opened.
+// Undocumented endpoints: if ChatGPT changes them, fall back to driving the UI.
+async function deleteCurrentChat() {
+  const id = location.pathname.match(/\/c\/([0-9a-f-]{36})/i)?.[1];
+  if (!id) throw new Error('No chat open');
+
+  const session = await fetch('/api/auth/session', { credentials: 'include' }).then(r => r.json());
+  if (!session?.accessToken) throw new Error('No access token');
+
+  const res = await fetch(`/backend-api/conversation/${id}`, {
+    method:      'PATCH',
+    credentials: 'include',
+    headers:     { 'Content-Type': 'application/json', Authorization: `Bearer ${session.accessToken}` },
+    body:        JSON.stringify({ is_visible: false }),
+  });
+  if (!res.ok) throw new Error(`Delete failed: HTTP ${res.status}`);
+
+  location.href = '/'; // full navigation so the sidebar list refreshes
+}
+
+// --- Delete button ---
 
 function createDeleteButton() {
   const btn = document.createElement('button');
   btn.id = 'ccgpt-delete-btn';
-  btn.title = 'Borrar chat';
+  btn.title = 'Delete chat';
   btn.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -99,6 +101,7 @@ function createDeleteButton() {
     background:     'transparent',
     color:          '#ef4444',
     transition:     'background 0.2s',
+    zIndex:         '2147483647',
   });
 
   btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(239,68,68,0.15)'; });
@@ -118,16 +121,19 @@ function createDeleteButton() {
 function positionButton() {
   const btn = document.getElementById('ccgpt-delete-btn');
   if (!btn) return;
-  const optionsButton = document.querySelector('[data-testid="conversation-options-button"]');
+  const optionsButton = findOptionsButton();
   if (!optionsButton) return;
   const rect = optionsButton.getBoundingClientRect();
-  btn.style.top  = (rect.bottom + 4) + 'px';
-  btn.style.left = rect.left + 'px';
+  // The options menu drops down below "More", so sit to the left of "Share" on the same row
+  const share = document.querySelector('[data-app-shell-main-titlebar] button[aria-label="Share"]');
+  const left = share ? share.getBoundingClientRect().left - btn.offsetWidth - 4 : rect.left - btn.offsetWidth - 4;
+  btn.style.top  = rect.top + 'px';
+  btn.style.left = left + 'px';
 }
 
 function injectButton() {
   if (document.getElementById('ccgpt-delete-btn')) return;
-  const optionsButton = document.querySelector('[data-testid="conversation-options-button"]');
+  const optionsButton = findOptionsButton();
   if (!optionsButton) return;
   const btn = createDeleteButton();
   btn.style.position = 'fixed';
@@ -139,7 +145,7 @@ function removeButton() {
   document.getElementById('ccgpt-delete-btn')?.remove();
 }
 
-// Muestra u oculta el botón según el estado del modo borrado
+// Show or hide button based on delete mode state
 function applyDeleteMode(enabled) {
   if (enabled) {
     injectButton();
@@ -148,8 +154,8 @@ function applyDeleteMode(enabled) {
   }
 }
 
-// Re-inyecta el botón si ChatGPT re-renderiza el header
-// Debounced para no dispararse en cada mutación individual de React
+// Re-inject button if ChatGPT re-renders the header
+// Debounced to avoid firing on each individual React mutation
 let observerTimer    = null;
 let reconnectTimer   = null;
 const observer = new MutationObserver(() => {
@@ -200,7 +206,7 @@ function showSlashMenu(filter, inputEl) {
         overflowY:    'auto',
       });
 
-      // Listeners agregados una sola vez al crear el menú
+      // Listeners added once when creating the menu
       slashMenu.addEventListener('mouseover', (e) => {
         const item = e.target.closest('.ccgpt-item');
         if (!item) return;
@@ -266,9 +272,9 @@ hideSlashMenu();
   clearTimeout(reconnectTimer);
   observer.disconnect();
 
-  console.time('[CCGPT] solo insercion');
+  console.time('[CCGPT] insert only');
 
-  // Setear texto directo en el DOM — evita la reconciliación pesada de React
+  // Set text directly in DOM - avoids heavy React reconciliation
   const currentText = slashInputEl.innerText || '';
   const newText = currentText.replace(searchStr, prompt.text);
 
@@ -276,7 +282,7 @@ hideSlashMenu();
   slashInputEl.innerText = newText;
   console.timeEnd('[CCGPT] innerText');
 
-  // Cursor al final
+  // Cursor at the end
   const range = document.createRange();
   const sel = window.getSelection();
   range.selectNodeContents(slashInputEl);
@@ -288,23 +294,23 @@ hideSlashMenu();
   slashInputEl.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }));
   console.timeEnd('[CCGPT] dispatchEvent');
 
-  console.timeEnd('[CCGPT] solo insercion');
-  console.timeEnd('[CCGPT] // → prompt insertado');
+  console.timeEnd('[CCGPT] insert only');
+  console.timeEnd('[CCGPT] // → prompt inserted');
 
-  // Reconectar — usamos una sola variable para no acumular timers
+  // Reconnect - use single variable to avoid accumulating timers
   clearTimeout(reconnectTimer);
   reconnectTimer = setTimeout(() => {
     observer.observe(document.body, { childList: true, subtree: true });
   }, 500);
 }
 
-// Detecta // mientras el usuario escribe
+// Detect // while user types
 document.addEventListener('input', (e) => {
   if (!e.target.isContentEditable) return;
   const text = e.target.innerText || '';
   const match = text.match(/\/\/(\w*)$/);
   if (match) {
-    if (!slashMenu) console.time('[CCGPT] // → prompt insertado');
+    if (!slashMenu) console.time('[CCGPT] // → prompt inserted');
     slashFilter = match[1];
     showSlashMenu(slashFilter, e.target);
   } else {
@@ -312,7 +318,7 @@ document.addEventListener('input', (e) => {
   }
 });
 
-// Navegación con teclado dentro del menú
+// Keyboard navigation within menu
 document.addEventListener('keydown', (e) => {
   if (!slashMenu || !slashItems.length) return;
   if (e.key === 'ArrowDown') {
