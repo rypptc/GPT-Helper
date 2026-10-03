@@ -1,85 +1,85 @@
 # GPT Helper
 
-Extensión de Chrome que personaliza y mejora la experiencia de ChatGPT con prompts rápidos y funciones adicionales.
+Chrome extension that customizes and enhances the ChatGPT experience with quick prompts and additional features.
 
-## Características
+## Features
 
 ### Slash Commands (//)
-- Escribe `//` seguido del nombre de un prompt para acceder rápidamente a tus textos guardados
-- Navegación con teclado (↑↓ para navegar, Enter/Tab para seleccionar, Esc para cerrar)
-- Búsqueda incremental por nombre mientras escribes (ej: `//res` filtra prompts que contengan "res" en el nombre)
+- Type `//` followed by a prompt name to quickly access your saved texts
+- Keyboard navigation (↑↓ to navigate, Enter/Tab to select, Esc to close)
+- Incremental search by name as you type (e.g., `//res` filters prompts containing "res" in the name)
 
-### Modo Borrado
-- Botón de borrado rápido para eliminar el chat actual
-- Se activa/desactiva desde el popup de la extensión
-- Icono de papelera flotante que aparece cerca del botón de opciones
+### Delete Mode
+- Quick delete button to remove the current chat
+- Activated/deactivated from the extension popup
+- Floating trash icon that appears near the options button
 
-### Gestión de Prompts
-- Guarda tus prompts favoritos con un nombre personalizado
-- Edita y elimina prompts desde el popup
-- Los prompts se sincronizan entre dispositivos con tu cuenta de Chrome
+### Prompt Management
+- Save your favorite prompts with custom names
+- Edit and delete prompts from the popup
+- Prompts sync across devices with your Chrome account
 
-## Instalación
+## Installation
 
-1. Descarga o clona este repositorio
-2. Abre Chrome y ve a `chrome://extensions/`
-3. Activa el "Modo de desarrollador" (esquina superior derecha)
-4. Haz clic en "Cargar extensión sin empaquetar"
-5. Selecciona la carpeta del proyecto
+1. Download or clone this repository
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable "Developer mode" (top right corner)
+4. Click "Load unpacked"
+5. Select the project folder
 
-## Uso
+## Usage
 
-### Agregar un Prompt
-1. Haz clic en el icono de la extensión
-2. Escribe un nombre corto para tu prompt (ej: "Resumen")
-3. Escribe el texto completo del prompt
-4. Haz clic en "Guardar prompt"
+### Adding a Prompt
+1. Click the extension icon
+2. Type a short name for your prompt (e.g., "Summary")
+3. Type the full prompt text
+4. Click "Save Prompt"
 
-### Usar un Prompt
-1. Ve a [ChatGPT](https://chatgpt.com)
-2. En el campo de texto, escribe `//` seguido del nombre del prompt
-3. Aparecerá un menú con sugerencias
-4. Usa las flechas o el mouse para seleccionar y presiona Enter
+### Using a Prompt
+1. Go to [ChatGPT](https://chatgpt.com)
+2. In the text field, type `//` followed by the prompt name
+3. A menu with suggestions will appear
+4. Use arrows or mouse to select and press Enter
 
-### Activar el Modo Borrado
-1. Haz clic en el icono de la extensión
-2. Activa el toggle "Modo borrado"
-3. Verás aparecer un botón de papelera en los chats
-4. Haz clic para borrar el chat actual rápidamente
+### Activating Delete Mode
+1. Click the extension icon
+2. Enable the "Delete Mode" toggle
+3. You'll see a trash button appear in chats
+4. Click to quickly delete the current chat
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 GPT-Helper/
-├── manifest.json         # Configuración de la extensión
-├── content.js           # Script principal que se inyecta en ChatGPT
-├── popup.html           # Interfaz del popup
-├── popup.js            # Lógica del popup
-├── icons/              # Iconos de la extensión
+├── manifest.json         # Extension configuration
+├── content.js           # Main script injected into ChatGPT
+├── popup.html           # Popup interface
+├── popup.js            # Popup logic
+├── icons/              # Extension icons
 │   ├── icon16.png
 │   ├── icon48.png
 │   └── icon128.png
-├── templates/          # Templates HTML de referencia
+├── templates/          # Reference HTML templates
 │   ├── chatgpt.html
 │   └── 3dotsupperright.html
 └── README.md
 ```
 
-## Tecnologías
+## Technologies
 
 - Manifest V3 (Chrome Extensions)
-- JavaScript vanilla (sin dependencias)
-- Chrome Storage API para sincronización
+- Vanilla JavaScript (no dependencies)
+- Chrome Storage API for synchronization
 
-## Desarrollo
+## Development
 
-El proyecto usa Chrome Extensions API con Manifest V3. Para hacer cambios:
+The project uses Chrome Extensions API with Manifest V3. To make changes:
 
-1. Modifica los archivos necesarios
-2. Ve a `chrome://extensions/`
-3. Haz clic en el icono de recarga de la extensión
-4. Prueba los cambios en ChatGPT
+1. Modify the necessary files
+2. Go to `chrome://extensions/`
+3. Click the extension reload icon
+4. Test the changes in ChatGPT
 
-## Licencia
+## License
 
 MIT

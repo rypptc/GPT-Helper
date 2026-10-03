@@ -4,13 +4,13 @@ const inputText = document.getElementById('input-text');
 const btnAdd    = document.getElementById('btn-add');
 const list      = document.getElementById('prompt-list');
 
-// Carga y renderiza los prompts guardados
+// Load and render saved prompts
 function loadPrompts() {
   chrome.storage.sync.get('prompts', ({ prompts = [] }) => {
     list.innerHTML = '';
 
     if (prompts.length === 0) {
-      list.innerHTML = '<div class="empty">Aún no hay prompts guardados.</div>';
+      list.innerHTML = '<div class="empty">No saved prompts yet.</div>';
       return;
     }
 
@@ -22,7 +22,7 @@ function loadPrompts() {
           <div class="prompt-name">//${prompt.name}</div>
           <div class="prompt-text">${prompt.text}</div>
         </div>
-        <button class="delete" data-index="${index}" title="Borrar">×</button>
+        <button class="delete" data-index="${index}" title="Delete">×</button>
       `;
       list.appendChild(item);
     });
@@ -33,7 +33,7 @@ function loadPrompts() {
   });
 }
 
-// Guarda un nuevo prompt
+// Save a new prompt
 btnAdd.addEventListener('click', () => {
   const name = inputName.value.trim();
   const text = inputText.value.trim();
@@ -50,7 +50,7 @@ btnAdd.addEventListener('click', () => {
   });
 });
 
-// Borra un prompt por índice
+// Delete a prompt by index
 function deletePrompt(index) {
   chrome.storage.sync.get('prompts', ({ prompts = [] }) => {
     prompts.splice(index, 1);
@@ -58,12 +58,12 @@ function deletePrompt(index) {
   });
 }
 
-// Permitir guardar con Enter en el campo nombre
+// Allow saving with Enter in the name field
 inputName.addEventListener('keydown', e => {
   if (e.key === 'Enter') btnAdd.click();
 });
 
-// Toggle modo borrado
+// Toggle delete mode
 chrome.storage.sync.get('deleteMode', ({ deleteMode = false }) => {
   toggleDelete.checked = deleteMode;
 });

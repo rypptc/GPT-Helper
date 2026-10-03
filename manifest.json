@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "GPT Helper",
-  "version": "1.0",
-  "description": "Personaliza y mejora la experiencia de ChatGPT",
+  "version": "1.0.1",
+  "description": "Customize and enhance the ChatGPT experience",
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon16.png",
